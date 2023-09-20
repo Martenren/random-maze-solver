@@ -12,7 +12,7 @@ class Game:
     def start(self):
         running = True
         particles = particle_creation(self.start_coordinates, 20, 20,
-                                      -0.1, 0, 1)
+                                      0.3, 0.3, 500)
 
         while running:
             for event in pygame.event.get():

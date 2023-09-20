@@ -12,10 +12,10 @@ def particle_creation(start_coordinates, width, height, velocity_x, velocity_y, 
         (start_coordinates[1] + random.randint(-10, 10)),
         width,
         height,
-        velocity_x,
-        velocity_y,
-        # velocity_x + random.randint(-90, 90) / 1000,
-        # velocity_y + random.randint(-90, 90) / 1000,
+        # velocity_x,
+        # velocity_y,
+        velocity_x + random.randint(-90, 90) / 1000,
+        velocity_y + random.randint(-90, 90) / 1000,
     ) for _ in range(number)]
 
 
@@ -41,11 +41,11 @@ class Particle:
     def change_velocity_y(self, vel):
         self.velocity_y = vel
 
-    def invert_velocity_x(self):
-        self.velocity_x *= -1
+    def invert_velocity_x(self, random_vel=True):
+        self.velocity_x *= -1 * (random.randint(90, 110) / 100) if random_vel else -1
 
-    def invert_velocity_y(self):
-        self.velocity_y *= -1
+    def invert_velocity_y(self, random_vel=True):
+        self.velocity_y *= -1 * (random.randint(90, 110) / 100) if random_vel else -1
 
     def move_horizontal(self):
         self.x += self.velocity_x
@@ -67,7 +67,7 @@ class Particle:
         cell_y = pixel_to_cell(self.y)
 
         collision_box_particle = self.image.get_rect(center=(self.x, self.y))
-        pygame.draw.rect(surface, color=Colors.CYAN.value, rect=collision_box_particle)
+        # pygame.draw.rect(surface, color=Colors.CYAN.value, rect=collision_box_particle)
 
         # Determine the direction of the arrow's movement
         dx = self.velocity_x
@@ -89,31 +89,36 @@ class Particle:
                     CELL_SIZE
                 )
 
-                pygame.draw.rect(surface, color=Colors.BLUE.value, rect=cell_rect)
+                # pygame.draw.rect(surface, color=Colors.BLUE.value, rect=cell_rect)
                 surrounding_rects.append(cell_rect)
 
         collision = collision_box_particle.collidelist(surrounding_rects)
 
-        buffer = 2
+        buffer = 1
 
         if collision != -1:
             collision_rect = surrounding_rects[collision]
-            pygame.draw.rect(surface, color=Colors.RED.value, rect=collision_rect)
-
-            if collision_box_particle.top - collision_rect.bottom <= 0 + buffer:
-                print("bottom collision")
+            # pygame.draw.rect(surface, color=Colors.RED.value, rect=collision_rect)
+            # print(f"collision_rect, top: {collision_rect.top}, bottom: {collision_rect.bottom}, left: {collision_rect.left}, right: {collision_rect.right}")
+            # print(f"collision_box_particle, top: {collision_box_particle.top}, bottom: {collision_box_particle.bottom}, left: {collision_box_particle.left}, right: {collision_box_particle.right}")
+            if 0 - buffer <= collision_rect.top - collision_box_particle.bottom <= 0 + buffer:
+                # print("bottom collision")
                 self.invert_velocity_y()
+                self.y = collision_rect.top - self.height / 2
 
-            elif collision_rect.top - collision_box_particle.bottom >= 0 + buffer:
-                print("top collision")
+            elif 0 - buffer <= collision_rect.bottom - collision_box_particle.top <= 0 + buffer:
+                # print("top collision")
                 self.invert_velocity_y()
+                self.y = collision_rect.bottom + self.height / 2
 
-            elif collision_rect.left - collision_box_particle.right >= 0 + buffer:
-                print("right collision")
+            elif 0 - buffer <= collision_rect.left - collision_box_particle.right <= 0 + buffer:
+                # print("right collision")
                 self.invert_velocity_x()
+                self.x = collision_rect.left - self.width / 2
 
-            elif collision_box_particle.left - collision_rect.right <= 0 + buffer:
-                print("left collision")
+            elif 0 - buffer <= collision_rect.right - collision_box_particle.left <= 0 + buffer:
+                # print("left collision")
                 self.invert_velocity_x()
+                self.x = collision_rect.right + self.width / 2
 
-
+            # print("collision")
