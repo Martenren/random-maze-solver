@@ -20,4 +20,6 @@ class Colors(Enum):
     BLACK = (0, 0, 0)   # Walls
     RED = (255, 0, 0)   # End point
     GREEN = (0, 255, 0)  # Start point
+    CYAN = (0, 255, 255)  # Particle box
+    BLUE = (0, 0, 255)  # Nearby walls box
 

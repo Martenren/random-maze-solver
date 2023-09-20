@@ -12,7 +12,7 @@ class Game:
     def start(self):
         running = True
         particles = particle_creation(self.start_coordinates, 20, 20,
-                                      0, 0, 1)
+                                      -0.1, 0, 1)
 
         while running:
             for event in pygame.event.get():
@@ -57,8 +57,15 @@ class Game:
             for particle in particles:
                 cell_x = pixel_to_cell(particle.x)
                 cell_y = pixel_to_cell(particle.y)
-                print(cell_x, cell_y)
-                if self.maze[cell_y][cell_x] == "e":
+                try:
+                    if self.maze[cell_y][cell_x] == "e":
+                        print("Exit found by a particle")
+                        print(cell_x, cell_y)
+                        print(self.maze[cell_y][cell_x])
+                        running = False
+                except IndexError:
+                    print("IndexError")
+                    print(cell_x, cell_y)
                     running = False
 
                 particle.move_vertical()

@@ -30,10 +30,10 @@ def gen_walls(maze, start_x, start_y, height, width):
                 walls.extend(valid_neighbors)
 
     # Set entrance and exit
-    for i in range(width):
+    for i in range(1, width):
         if maze[1][i] == 'c':
-            start_coordinates = (0, i)
-            maze[0][i] = 's'
+            start_coordinates = (1, i)
+            maze[1][i] = 's'
             break
 
     for i in range(width - 1, 0, -1):
