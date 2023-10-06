@@ -1,3 +1,5 @@
+import random
+
 import maze_creation as mc
 from game import Game
 from joblib import Parallel, delayed
@@ -11,12 +13,14 @@ def game_loop(desired_position, maze, start_coordinates, end_coordinates, color)
     os.environ['SDL_VIDEO_WINDOW_POS'] = "{},{}".format(*desired_position)
     WINDOW = pygame.display.set_mode(WINDOW_SIZE)
 
-    game = Game(WINDOW, maze, start_coordinates, end_coordinates, color, 30)
+    game = Game(WINDOW, maze, start_coordinates, end_coordinates, color, 100)
     game.start()
 
 
 if __name__ == "__main__":
     maze, start_coordinates, end_coordinates = mc.maze_generation()
+
+    nb_games = int(input("Enter number of simultaneous games:"))
 
     # for color in Colors:
     #     with codecs.open('../assets/particle.svg', encoding='utf-8', errors='ignore') as f:
@@ -45,12 +49,12 @@ if __name__ == "__main__":
             y = (row * WINDOW_SIZE[1]) + ((row + 1) * vertical_spacing)
 
             desired_positions.append((x, y))
-            print(x, y)
 
-    colors = [color.name.lower() for color in Colors if color.name.lower() != 'white']
-    num_jobs = 1  # Number of parallel jobs
+    colors = [color.name.lower() for color in Colors if color.name.lower() not in ['white', 'black', 'green', 'red']]
+    sub_colors = random.choices(colors, k=nb_games)
+    num_jobs = nb_games  # Number of parallel jobs
     Parallel(n_jobs=num_jobs)(delayed(game_loop)(desired_position, maze, start_coordinates, end_coordinates, color)
-                              for i, color, desired_position in zip(range(num_jobs), colors, desired_positions))
+                              for i, color, desired_position in zip(range(num_jobs), sub_colors, desired_positions))
 
     # desired_position = (100, 100)
     #

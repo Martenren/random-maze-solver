@@ -20,6 +20,10 @@ class Game:
             for col in range(MAZE_WIDTH):
                 if self.maze[row][col] == "w":
                     self.walls.append((row, col))
+        self.rect_walls = [pygame.rect.Rect(
+                    (MARGIN + CELL_SIZE) * wall[1] + MARGIN, (MARGIN + CELL_SIZE) * wall[0] + MARGIN, CELL_SIZE,
+                    CELL_SIZE
+                ) for wall in self.walls]
 
     def start(self):
         running = True
@@ -65,7 +69,21 @@ class Game:
                          CELL_SIZE],
                     )
 
-            particles.update(self.maze, self.WINDOW)
+            exit_found_or_error = particles.update(self.maze, self.WINDOW)
+
+            if exit_found_or_error:
+                break
+
+            for wall in self.rect_walls:
+                already_collided = []
+                collisions = wall.collidelistall(particles.collision_rects)
+                if collisions:
+                    collisionned_particles = [particles.particles[collision] for collision in collisions]
+                    for particle in collisionned_particles:
+                        if particle not in already_collided:
+                            particle.handle_collision(wall)
+                            already_collided.append(particle)
+
 
             # Update the display
             pygame.display.flip()
