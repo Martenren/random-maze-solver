@@ -1,25 +1,43 @@
 from enum import Enum
-import pygame
 
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 
-CELL_SIZE = 40
+CELL_SIZE = (WINDOW_HEIGHT + WINDOW_WIDTH) // 2 // 15
 MARGIN = 0
 
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
-WINDOW = pygame.display.set_mode(WINDOW_SIZE)
 
 MAZE_WIDTH = (WINDOW_WIDTH - MARGIN) // (CELL_SIZE + MARGIN)
 MAZE_HEIGHT = (WINDOW_HEIGHT - MARGIN) // (CELL_SIZE + MARGIN)
 
 
 class Colors(Enum):
-    WHITE = (255, 255, 255)  # Path
-    BLACK = (0, 0, 0)   # Walls
-    RED = (255, 0, 0)   # End point
-    GREEN = (0, 255, 0)  # Start point
-    CYAN = (0, 255, 255)  # Particle box
-    BLUE = (0, 0, 255)  # Nearby walls box
+    WHITE = "#FFFFFF"  # Path
+    BLACK = "#000000"  # Walls
+    RED = "#FF0000"  # End point
+    GREEN = "#00FF00"  # Start point
+
+    # Players
+    CYAN = "#00FFFF"
+    BLUE = "#0000FF"
+    YELLOW = "#FFFF00"
+    PURPLE = "#FF00FF"
+    ORANGE = "#FFA500"
+    GREY = "#808080"
+    PINK = "#FFC0CB"
+    BROWN = "#A52A2A"
+    LIME = "#008000"
+    MAROON = "#800000"
+    NAVY = "#000080"
+    TEAL = "#008080"
+    OLIVE = "#808000"
+    GOLD = "#FFD700"
+    INDIGO = "#4B0082"
+    VIOLET = "#EE82EE"
+    TURQUOISE = "#40E0D0"
+    SILVER = "#C0C0C0"
+    CRIMSON = "#DC143C"
+
 

@@ -26,21 +26,27 @@ def gen_walls(maze, start_x, start_y, height, width):
 
                 # Check if the cell is on the outer ring (except for the start and end positions)
                 if y == 0 or x == 0 or y == height - 1 or x == width - 1:
-                    maze[y][x] = 'w'  # Set the outer ring as walls
+                    # Do not mark as 'w' here, mark as 'c' and update after maze generation
+                    pass
                 else:
                     walls.extend(valid_neighbors)
 
+    # Determine valid exit locations that are not in a corner
+    valid_exit_locations = [(1, i) for i in range(1, width - 1)]
+
+    # Randomly select an exit location from the valid ones
+    exit_coordinates = random.choice(valid_exit_locations)
+    end_coordinates = (height - 1, exit_coordinates[1])
+
     # Set start and exit
-    for i in range(1, width):
-        if maze[1][i] == 'c':
-            start_coordinates = (1, i)
-            maze[1][i] = 's'
-            break
+    maze[1][exit_coordinates[1]] = 's'
+    maze[end_coordinates[0]][end_coordinates[1]] = 'e'
 
-    for i in range(width - 1, 0, -1):
-        if maze[height - 2][i] == 'c':
-            end_coordinates = (height - 1, i)
-            maze[height - 1][i] = 'e'
-            break
+    # Mark the outer ring cells as 'w'
+    for y in range(height):
+        for x in range(width):
+            if y == 0 or x == 0 or y == height - 1 or x == width - 1:
+                if maze[y][x] == 'c':
+                    maze[y][x] = 'w'
 
-    return maze, start_coordinates, end_coordinates
+    return maze, (1, exit_coordinates[1]), end_coordinates

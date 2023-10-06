@@ -1,18 +1,29 @@
 import sys
-from particle import particle_creation
+from particle import ParticleCluster
 from utils import *
+import multiprocessing
+import pygame
 
 
 class Game:
-    def __init__(self, maze, start_coordinates, end_coordinantes):
+    def __init__(self, WINDOW, maze, start_coordinates, end_coordinantes, player_color, num_particles):
+        pygame.init()
+        self.WINDOW = WINDOW
         self.maze = maze
         self.start_coordinates = start_coordinates
         self.end_coordinantes = end_coordinantes
+        self.clock = pygame.time.Clock()
+        self.player_color = player_color
+        self.num_particles = num_particles
+        self.walls = []
+        for row in range(MAZE_HEIGHT):
+            for col in range(MAZE_WIDTH):
+                if self.maze[row][col] == "w":
+                    self.walls.append((row, col))
 
     def start(self):
         running = True
-        particles = particle_creation(self.start_coordinates, 20, 20,
-                                      0.3, 0.3, 500)
+        particles = ParticleCluster(self.start_coordinates, self.player_color, self.num_particles)
 
         while running:
             for event in pygame.event.get():
@@ -34,7 +45,7 @@ class Game:
                                 self.maze[cell_y][cell_x] = 'w' if self.maze[cell_y][cell_x] == 'c' else 'c'
 
             # Clear the screen
-            WINDOW.fill(Colors.WHITE.value)
+            self.WINDOW.fill(Colors.WHITE.value)
 
             # Draw the maze
             for row in range(MAZE_HEIGHT):
@@ -48,36 +59,19 @@ class Game:
                     else:
                         color = Colors.GREEN.value
                     pygame.draw.rect(
-                        WINDOW,
+                        self.WINDOW,
                         color,
                         [(MARGIN + CELL_SIZE) * col + MARGIN, (MARGIN + CELL_SIZE) * row + MARGIN, CELL_SIZE,
                          CELL_SIZE],
                     )
 
-            for particle in particles:
-                cell_x = pixel_to_cell(particle.x)
-                cell_y = pixel_to_cell(particle.y)
-                try:
-                    if self.maze[cell_y][cell_x] == "e":
-                        print("Exit found by a particle")
-                        print(cell_x, cell_y)
-                        print(self.maze[cell_y][cell_x])
-                        running = False
-                except IndexError:
-                    print("IndexError")
-                    print(cell_x, cell_y)
-                    running = False
-
-                particle.move_vertical()
-                particle.move_horizontal()
-
-                particle.handle_collision(self.maze, MARGIN, CELL_SIZE, WINDOW, MAZE_WIDTH, MAZE_HEIGHT)
-
-                particle.draw(WINDOW)
+            particles.update(self.maze, self.WINDOW)
 
             # Update the display
             pygame.display.flip()
+            self.clock.tick(60)
 
         # Quit Pygame
         pygame.quit()
         sys.exit()
+

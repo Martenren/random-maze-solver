@@ -2,26 +2,52 @@ import pygame
 import math
 import random
 from utils import *
-from constants import *
+import codecs
+import os
 
 
-def particle_creation(start_coordinates, width, height, velocity_x, velocity_y, number):
+def particle_creation(start_coordinates, color, number):
     start_coordinates = (cell_to_pixel(start_coordinates[1]), cell_to_pixel(start_coordinates[0]))
     return [Particle(
         (start_coordinates[0] + random.randint(-10, 10)),
         (start_coordinates[1] + random.randint(-10, 10)),
-        width,
-        height,
-        # velocity_x,
-        # velocity_y,
-        velocity_x + random.randint(-90, 90) / 1000,
-        velocity_y + random.randint(-90, 90) / 1000,
+        WINDOW_WIDTH // 30,
+        WINDOW_HEIGHT // 30,
+        1.0,
+        1.0,
+        color
     ) for _ in range(number)]
 
 
+class ParticleCluster:
+    def __init__(self, start_coordinates, color, num_particles):
+        self.particles = particle_creation(start_coordinates, color, num_particles)
+
+    def update(self, maze, WINDOW):
+        for particle in self.particles:
+            cell_x = pixel_to_cell(particle.x)
+            cell_y = pixel_to_cell(particle.y)
+            try:
+                if maze[cell_y][cell_x] == "e":
+                    print("Exit found by a particle")
+                    print(cell_x, cell_y)
+                    print(maze[cell_y][cell_x])
+                    return False
+            except IndexError:
+                print("IndexError")
+                print(cell_x, cell_y)
+                return False
+
+            particle.move_vertical()
+            particle.move_horizontal()
+            particle.handle_collision(maze, MARGIN, CELL_SIZE, WINDOW, MAZE_WIDTH, MAZE_HEIGHT)
+            particle.draw(WINDOW)
+
+
 class Particle:
-    def __init__(self, x, y, width, height, vel_x, vel_y):
-        original_image = pygame.image.load('../assets/particle.svg')
+    def __init__(self, x, y, width, height, vel_x, vel_y, color):
+        original_image = pygame.image.load(f'../assets/particles/particle_{color}.svg')
+
         self.image = pygame.transform.scale(original_image, (width, height))
         self.x = x
         self.y = y
@@ -41,10 +67,10 @@ class Particle:
     def change_velocity_y(self, vel):
         self.velocity_y = vel
 
-    def invert_velocity_x(self, random_vel=True):
+    def invert_velocity_x(self, random_vel=False):
         self.velocity_x *= -1 * (random.randint(90, 110) / 100) if random_vel else -1
 
-    def invert_velocity_y(self, random_vel=True):
+    def invert_velocity_y(self, random_vel=False):
         self.velocity_y *= -1 * (random.randint(90, 110) / 100) if random_vel else -1
 
     def move_horizontal(self):
@@ -69,28 +95,13 @@ class Particle:
         collision_box_particle = self.image.get_rect(center=(self.x, self.y))
         # pygame.draw.rect(surface, color=Colors.CYAN.value, rect=collision_box_particle)
 
-        # Determine the direction of the arrow's movement
-        dx = self.velocity_x
-        dy = self.velocity_y
-
         # Get the coordinates of the surrounding cells
-        surrounding_cells = [(cell_x + dx, cell_y + dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if (cell_x + dx < MAZE_WIDTH and cell_y + dy < MAZE_HEIGHT)]
-        surrounding_cells = [(cell_x, cell_y) for cell_x, cell_y in surrounding_cells if maze[cell_y][cell_x] == 'w']
-        surrounding_rects = []
+        surrounding_rects = [pygame.Rect((cell_x + dx) * (CELL_SIZE + MARGIN) + MARGIN, (cell_y + dy) * (CELL_SIZE + MARGIN) + MARGIN, CELL_SIZE, CELL_SIZE) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if
+                             0 <= cell_x + dx < MAZE_WIDTH and 0 <= cell_y + dy < MAZE_HEIGHT and maze[cell_y + dy][
+                                 cell_x + dx] == 'w']
 
-        for x, y in surrounding_cells:
-            # Check if the cell coordinates are within the maze boundaries
-            if 0 <= x < len(maze[0]) and 0 <= y < len(maze):
-                # Calculate the pixel coordinates of the cell
-                cell_rect = pygame.Rect(
-                    x * (CELL_SIZE + MARGIN) + MARGIN,
-                    y * (CELL_SIZE + MARGIN) + MARGIN,
-                    CELL_SIZE,
-                    CELL_SIZE
-                )
-
-                # pygame.draw.rect(surface, color=Colors.BLUE.value, rect=cell_rect)
-                surrounding_rects.append(cell_rect)
+        # for surrounding_rect in surrounding_rects:
+        #     pygame.draw.rect(surface, color=Colors.BLUE.value, rect=surrounding_rect)
 
         collision = collision_box_particle.collidelist(surrounding_rects)
 
@@ -99,26 +110,20 @@ class Particle:
         if collision != -1:
             collision_rect = surrounding_rects[collision]
             # pygame.draw.rect(surface, color=Colors.RED.value, rect=collision_rect)
-            # print(f"collision_rect, top: {collision_rect.top}, bottom: {collision_rect.bottom}, left: {collision_rect.left}, right: {collision_rect.right}")
-            # print(f"collision_box_particle, top: {collision_box_particle.top}, bottom: {collision_box_particle.bottom}, left: {collision_box_particle.left}, right: {collision_box_particle.right}")
+
             if 0 - buffer <= collision_rect.top - collision_box_particle.bottom <= 0 + buffer:
                 # print("bottom collision")
                 self.invert_velocity_y()
                 self.y = collision_rect.top - self.height / 2
 
             elif 0 - buffer <= collision_rect.bottom - collision_box_particle.top <= 0 + buffer:
-                # print("top collision")
                 self.invert_velocity_y()
                 self.y = collision_rect.bottom + self.height / 2
 
             elif 0 - buffer <= collision_rect.left - collision_box_particle.right <= 0 + buffer:
-                # print("right collision")
                 self.invert_velocity_x()
                 self.x = collision_rect.left - self.width / 2
 
             elif 0 - buffer <= collision_rect.right - collision_box_particle.left <= 0 + buffer:
-                # print("left collision")
                 self.invert_velocity_x()
                 self.x = collision_rect.right + self.width / 2
-
-            # print("collision")

@@ -3,6 +3,7 @@ import prim_algo_gen as pag
 from constants import *
 import time
 from utils import *
+import pygame
 
 
 def maze_generation():
@@ -17,7 +18,7 @@ def maze_generation():
 
     # Initialize the maze as a grid of walls
     maze = [['w'] * MAZE_WIDTH for _ in range(MAZE_HEIGHT)]
-    print("before algo len maze: ", len(maze), len(maze[0]))
+    # print("before algo len maze: ", len(maze), len(maze[0]))
 
     start_time = time.time()
 
