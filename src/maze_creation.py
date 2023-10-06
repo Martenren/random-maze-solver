@@ -22,8 +22,9 @@ def maze_generation():
 
     start_time = time.time()
 
-    maze, start_coordinates, end_coordinantes = pag.gen_walls(maze, start_x, start_y, MAZE_HEIGHT, MAZE_WIDTH)
+    # maze, start_coordinates, end_coordinantes = pag.gen_walls(maze, start_x, start_y, MAZE_HEIGHT, MAZE_WIDTH)
+    maze, start_coordinates, end_coordinates = pag.generate_maze(MAZE_HEIGHT, MAZE_WIDTH)
 
     print("maze_generation took", time.time() - start_time, "seconds")
 
-    return maze, start_coordinates, end_coordinantes
+    return maze, start_coordinates, end_coordinates

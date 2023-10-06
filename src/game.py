@@ -3,6 +3,7 @@ from particle import ParticleCluster
 from utils import *
 import multiprocessing
 import pygame
+import os
 
 
 class Game:
@@ -16,6 +17,16 @@ class Game:
         self.player_color = player_color
         self.num_particles = num_particles
         self.walls = []
+        for row in range(MAZE_HEIGHT):
+            for col in range(MAZE_WIDTH):
+                if self.maze[row][col] == "w":
+                    self.walls.append((row, col))
+        self.rect_walls = [pygame.rect.Rect(
+                    (MARGIN + CELL_SIZE) * wall[1] + MARGIN, (MARGIN + CELL_SIZE) * wall[0] + MARGIN, CELL_SIZE,
+                    CELL_SIZE
+                ) for wall in self.walls]
+
+    def update_walls(self):
         for row in range(MAZE_HEIGHT):
             for col in range(MAZE_WIDTH):
                 if self.maze[row][col] == "w":
@@ -47,6 +58,7 @@ class Game:
                             # Check if clicked cell is not the start or end point
                             if self.maze[cell_y][cell_x] not in ['e', 's']:
                                 self.maze[cell_y][cell_x] = 'w' if self.maze[cell_y][cell_x] == 'c' else 'c'
+                            self.update_walls()
 
             # Clear the screen
             self.WINDOW.fill(Colors.WHITE.value)
