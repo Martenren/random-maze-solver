@@ -4,27 +4,25 @@ from utils import *
 import multiprocessing
 import pygame
 import os
+import maze_creation
 
 
 class Game:
-    def __init__(self, WINDOW, maze, start_coordinates, end_coordinantes, player_color, num_particles):
+    def __init__(self, WINDOW, player_color, num_particles, maze_algorithm):
         pygame.init()
         self.WINDOW = WINDOW
-        self.maze = maze
-        self.start_coordinates = start_coordinates
-        self.end_coordinantes = end_coordinantes
-        self.clock = pygame.time.Clock()
+        self.maze_algorithm = maze_algorithm
         self.player_color = player_color
         self.num_particles = num_particles
+        self.maze = []
+        self.start_coordinates = 0
+        self.end_coordinates = 0
+        self.clock = pygame.time.Clock()
         self.walls = []
-        for row in range(MAZE_HEIGHT):
-            for col in range(MAZE_WIDTH):
-                if self.maze[row][col] == "w":
-                    self.walls.append((row, col))
-        self.rect_walls = [pygame.rect.Rect(
-                    (MARGIN + CELL_SIZE) * wall[1] + MARGIN, (MARGIN + CELL_SIZE) * wall[0] + MARGIN, CELL_SIZE,
-                    CELL_SIZE
-                ) for wall in self.walls]
+        self.rect_walls = []
+        self.particles = []
+        self.cell_colors = []
+        self.rects = []
 
     def update_walls(self):
         for row in range(MAZE_HEIGHT):
@@ -36,9 +34,30 @@ class Game:
                     CELL_SIZE
                 ) for wall in self.walls]
 
+    def setup_maze(self):
+        self.maze, self.start_coordinates, self.end_coordinates, cell_colors, rects = maze_creation.maze_generation(
+            self.WINDOW, self.maze_algorithm)
+
+        for row in range(MAZE_HEIGHT):
+            for col in range(MAZE_WIDTH):
+                if self.maze[row][col] == "w":
+                    self.walls.append((row, col))
+        self.rect_walls = [pygame.rect.Rect(
+                    (MARGIN + CELL_SIZE) * wall[1] + MARGIN, (MARGIN + CELL_SIZE) * wall[0] + MARGIN, CELL_SIZE,
+                    CELL_SIZE
+                ) for wall in self.walls]
+
+        return cell_colors, rects
+
+    def draw_maze(self, cell_colors, rects):
+        # Draw the maze and update the display
+        for color, rect in zip(cell_colors, rects):
+            pygame.draw.rect(self.WINDOW, color, rect)
+        return True
+
     def start(self):
         running = True
-        particles = ParticleCluster(self.start_coordinates, self.player_color, self.num_particles)
+        first_time_setup = True
 
         while running:
             for event in pygame.event.get():
@@ -60,41 +79,30 @@ class Game:
                                 self.maze[cell_y][cell_x] = 'w' if self.maze[cell_y][cell_x] == 'c' else 'c'
                             self.update_walls()
 
-            # Clear the screen
             self.WINDOW.fill(Colors.WHITE.value)
 
-            # Draw the maze
-            for row in range(MAZE_HEIGHT):
-                for col in range(MAZE_WIDTH):
-                    if self.maze[row][col] == 'c':
-                        color = Colors.WHITE.value
-                    elif self.maze[row][col] == 'w':
-                        color = Colors.BLACK.value
-                    elif self.maze[row][col] == 'e':
-                        color = Colors.RED.value
-                    else:
-                        color = Colors.GREEN.value
-                    pygame.draw.rect(
-                        self.WINDOW,
-                        color,
-                        [(MARGIN + CELL_SIZE) * col + MARGIN, (MARGIN + CELL_SIZE) * row + MARGIN, CELL_SIZE,
-                         CELL_SIZE],
-                    )
+            if first_time_setup:
+                self.cell_colors, self.rects = self.setup_maze()
+                self.particles = ParticleCluster(self.start_coordinates, self.player_color, self.num_particles)
+                first_time_setup = False
 
-            exit_found_or_error = particles.update(self.maze, self.WINDOW)
+            else:
+                self.draw_maze(self.cell_colors, self.rects)
 
-            if exit_found_or_error:
-                break
+                exit_found_or_error = self.particles.update(self.maze, self.WINDOW)
 
-            for wall in self.rect_walls:
-                already_collided = []
-                collisions = wall.collidelistall(particles.collision_rects)
-                if collisions:
-                    collisionned_particles = [particles.particles[collision] for collision in collisions]
-                    for particle in collisionned_particles:
-                        if particle not in already_collided:
-                            particle.handle_collision(wall)
-                            already_collided.append(particle)
+                if exit_found_or_error:
+                    break
+
+                for wall in self.rect_walls:
+                    already_collided = []
+                    collisions = wall.collidelistall(self.particles.collision_rects)
+                    if collisions:
+                        collisionned_particles = [self.particles.this[collision] for collision in collisions]
+                        for particle in collisionned_particles:
+                            if particle not in already_collided:
+                                particle.handle_collision(wall)
+                                already_collided.append(particle)
 
 
             # Update the display

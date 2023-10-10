@@ -1,12 +1,10 @@
 from enum import Enum
 
 
-# window_size = int(input("Enter window size (square so only one value):"))
-
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 300
 
-CELL_SIZE = (WINDOW_HEIGHT + WINDOW_WIDTH) // 2 // 15
+CELL_SIZE = WINDOW_WIDTH // 15
 MARGIN = 0
 
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)

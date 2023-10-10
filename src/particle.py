@@ -7,25 +7,26 @@ from constants import *
 
 
 def particle_creation(start_coordinates, color, number):
-    start_coordinates = (cell_to_pixel(start_coordinates[1]), cell_to_pixel(start_coordinates[0]))
+    start_coordinates = (cell_to_pixel(start_coordinates[0]), cell_to_pixel(start_coordinates[1]))
+    particle_random = random.Random()
     return [Particle(
         start_coordinates[0],
         start_coordinates[1],
-        WINDOW_WIDTH // 30,
-        WINDOW_HEIGHT // 30,
-        random.uniform(-1, 1),
-        random.uniform(-1, 1),
+        CELL_SIZE // 2,
+        CELL_SIZE // 2,
+        particle_random.uniform(-1, 1),
+        particle_random.uniform(-1, 1),
         color
     ) for _ in range(number)]
 
 
 class ParticleCluster:
     def __init__(self, start_coordinates, color, num_particles):
-        self.particles = particle_creation(start_coordinates, color, num_particles)
-        self.collision_rects = [particle.get_collision_rect() for particle in self.particles]
+        self.this = particle_creation(start_coordinates, color, num_particles)
+        self.collision_rects = [particle.get_collision_rect() for particle in self.this]
 
     def update(self, maze, WINDOW):
-        for particle in self.particles:
+        for particle in self.this:
             cell_x = pixel_to_cell(particle.x)
             cell_y = pixel_to_cell(particle.y)
             try:
@@ -44,7 +45,7 @@ class ParticleCluster:
             # particle.handle_collision(maze, MARGIN, CELL_SIZE, WINDOW, MAZE_WIDTH, MAZE_HEIGHT)
             particle.update_rect(particle.x, particle.y, WINDOW)
             particle.draw(WINDOW)
-            self.collision_rects = [particle.get_collision_rect() for particle in self.particles]
+            self.collision_rects = [particle.get_collision_rect() for particle in self.this]
 
 
 class Particle:
