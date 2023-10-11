@@ -19,7 +19,6 @@ def union_sets(set1, set2, grid):
 def generate_maze(maze, start_coordinates, rects, color_map, WINDOW):
     start_x, start_y = start_coordinates
 
-    # create set for each cell:
     grid = []
 
     for y in range(1, MAZE_HEIGHT-1):

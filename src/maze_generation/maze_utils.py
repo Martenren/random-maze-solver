@@ -5,7 +5,7 @@ from src.constants import *
 def draw_rect(rect, color, WINDOW):
     pygame.draw.rect(WINDOW, color, rect)
     pygame.display.flip()
-    pygame.time.delay(80)
+    pygame.time.delay(50)
 
 
 def get_cells_around(x, y, is_wall):

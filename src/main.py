@@ -1,13 +1,14 @@
 import random
 from game import Game
 from joblib import Parallel, delayed
-import pygame
+from main_menu import main_menu
 from constants import *
 import os
 import time
+import pygame
 
 
-def game_loop(desired_position,  color, maze_algorithm, seed, random_mazes):
+def game_loop(desired_position, color, maze_algorithm, seed, random_mazes):
     if not random_mazes:
         random.seed(seed)
     os.environ['SDL_VIDEO_WINDOW_POS'] = "{},{}".format(*desired_position)
@@ -17,25 +18,13 @@ def game_loop(desired_position,  color, maze_algorithm, seed, random_mazes):
     game.start()
 
 
-def display_timer(window, timer_font, shared_timer):
-    while True:
-        window.fill((255, 255, 255))  # Clear the window
-        timer_text = timer_font.render(f"Time: {int(shared_timer[0])} seconds", True, (0, 0, 0))  # Render the timer text
-        text_rect = timer_text.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
-        window.blit(timer_text, text_rect)  # Blit the text onto the window
-        pygame.display.flip()
-
-
 if __name__ == "__main__":
-    nb_games = int(input("Enter number of simultaneous games:"))
+    # nb_games = int(input("Enter number of simultaneous games:"))
+    # maze_algorithm = input(
+    #     "Enter maze generation algorithm (prim, kruskal, recursive_backtracking, wilson, aldous_broder):")
+    # random_mazes = True if input("Random mazes? (y/n):") == "y" else False
 
-    # for color in Colors:
-    #     with codecs.open('../assets/particle.svg', encoding='utf-8', errors='ignore') as f:
-    #         particle_svg = f.read()
-    #         particle_svg = particle_svg.replace('#666666', color.value)  # Replace the color
-    #
-    #     with open(f'../assets/particles/particle_{color.name.lower()}.svg', 'w', encoding='utf-8') as f:
-    #         f.write(particle_svg)
+    nb_games, maze_algorithm, random_mazes = main_menu()
 
     # Calculate the screen resolution
     screen_width, screen_height = 1440, 720
@@ -61,16 +50,9 @@ if __name__ == "__main__":
     sub_colors = random.sample(colors, k=nb_games)
     num_jobs = nb_games  # Number of parallel jobs
 
-    maze_algorithm = input(
-        "Enter maze generation algorithm (prim, kruskal, recursive_backtracking, wilson, aldous_broder):")
-
-    random_mazes = True if input("Random mazes? (y/n):") == "y" else False
-
     seed = random.uniform(0, time.time())
 
     # Start the game loops in parallel
     Parallel(n_jobs=num_jobs)(
         delayed(game_loop)(desired_position, color, maze_algorithm, seed, random_mazes)
         for i, color, desired_position in zip(range(num_jobs), sub_colors, desired_positions))
-
-
